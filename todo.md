@@ -41,16 +41,16 @@
 **Goal**: Analyze chess positions with Stockfish to identify blunders
 **Test**: Can analyze sample positions and detect evaluation changes
 
-- [ ] 4.1: Create analysis/stockfish_analyzer.py with StockfishAnalyzer class
-- [ ] 4.2: Implement __init__(self, engine_path: str = None) with Stockfish initialization
-- [ ] 4.3: Add analyze_position(self, fen: str, depth: int = 15) returning evaluation in centipawns
-- [ ] 4.4: Add get_best_move(self, fen: str, depth: int = 15) returning move in UCI format
-- [ ] 4.5: Create analysis/position_analyzer.py with find_blunders(game: Game, threshold: int = 300) function
-- [ ] 4.6: Implement game replay logic: step through moves, analyze each position
-- [ ] 4.7: Compare evaluations before/after each user move to detect drops > threshold
-- [ ] 4.8: Return List[Blunder] with position FEN, user move, best move, eval difference
-- [ ] 4.9: Add error handling for invalid positions, engine timeouts
-- [ ] 4.10: Test blunder detection on sample games with known tactical mistakes
+- [x] 4.1: Create analysis/stockfish_analyzer.py with StockfishAnalyzer class
+- [x] 4.2: Implement __init__(self, engine_path: str = None) with Stockfish initialization
+- [x] 4.3: Add analyze_position(self, fen: str, depth: int = 15) returning evaluation in centipawns
+- [x] 4.4: Add get_best_move(self, fen: str, depth: int = 15) returning move in UCI format
+- [x] 4.5: Create analysis/position_analyzer.py with find_blunders(game: Game, threshold: int = 300) function
+- [x] 4.6: Implement game replay logic: step through moves, analyze each position
+- [x] 4.7: Compare evaluations before/after each user move to detect drops > threshold
+- [x] 4.8: Return List[Blunder] with position FEN, user move, best move, eval difference
+- [x] 4.9: Add error handling for invalid positions, engine timeouts
+- [x] 4.10: Test blunder detection on sample games with known tactical mistakes
 
 ### Section 5: GUI Framework & Chess Board
 **Goal**: Create interactive chess board widget for move input
