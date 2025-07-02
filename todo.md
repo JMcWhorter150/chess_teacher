@@ -101,15 +101,15 @@
 **Goal**: Implement spaced repetition scheduling for optimal review timing
 **Test**: Review schedule updates correctly based on performance
 
-- [ ] 8.1: Create training/spaced_repetition.py with SpacedRepetition class
-- [ ] 8.2: Implement SM-2 algorithm constants: initial ease_factor = 2.5, intervals = [1, 6]
-- [ ] 8.3: Add calculate_next_review(self, review: Review, quality: int) returning new Review
-- [ ] 8.4: Update ease factor based on performance: increase for correct, decrease for incorrect
-- [ ] 8.5: Calculate next review date: multiply interval by ease factor
-- [ ] 8.6: Add get_due_reviews(self) returning List[Review] where next_review <= today
-- [ ] 8.7: Implement reset_difficult_items(self, review: Review) for repeated failures
-- [ ] 8.8: Add review statistics: total reviews, retention rate, average ease
-- [ ] 8.9: Test algorithm with sample review data over simulated time periods
+- [x] 8.1: Create training/spaced_repetition.py with SpacedRepetition class
+- [x] 8.2: Implement SM-2 algorithm constants: initial ease_factor = 2.5, intervals = [1, 6]
+- [x] 8.3: Add calculate_next_review(self, review: Review, quality: int) returning new Review
+- [x] 8.4: Update ease factor based on performance: increase for correct, decrease for incorrect
+- [x] 8.5: Calculate next review date: multiply interval by ease factor
+- [x] 8.6: Add get_due_reviews(self) returning List[Review] where next_review <= today
+- [x] 8.7: Implement reset_difficult_items(self, review: Review) for repeated failures
+- [x] 8.8: Add review statistics: total reviews, retention rate, average ease
+- [x] 8.9: Test algorithm with sample review data over simulated time periods
 
 ### Section 9: Integration & Workflow
 **Goal**: Connect all components into complete application workflow

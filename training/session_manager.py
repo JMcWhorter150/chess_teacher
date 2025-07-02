@@ -5,6 +5,7 @@ from datetime import datetime, date
 from data.models import Blunder, Review
 from data.database import create_connection, get_due_reviews, record_attempt
 from config.settings import DATABASE_PATH
+from .spaced_repetition import SpacedRepetition
 
 
 class TrainingSession:
@@ -16,6 +17,9 @@ class TrainingSession:
         self.username = username
         self.max_positions = max_positions
         self.conn = create_connection(DATABASE_PATH)
+        
+        # Initialize spaced repetition system
+        self.spaced_repetition = SpacedRepetition(username)
         
         # Session state
         self.available_positions: List[tuple[Blunder, Review]] = []
@@ -39,8 +43,8 @@ class TrainingSession:
         if not self.conn:
             return
         
-        # Get due reviews (positions that need to be reviewed today or earlier)
-        self.available_positions = get_due_reviews(self.conn, self.username)
+        # Get due reviews using spaced repetition system
+        self.available_positions = self.spaced_repetition.get_due_reviews()
         
         # If no due reviews, get some random blunders for practice
         if not self.available_positions:
@@ -67,7 +71,7 @@ class TrainingSession:
         """Check if there are more positions available."""
         return self.current_position_index < len(self.available_positions)
     
-    def record_attempt(self, blunder_id: int, correct: bool, time_taken: float):
+    def record_attempt(self, blunder_id: int, correct: bool, time_taken: float, quality: int = None):
         """Record a training attempt and update spaced repetition schedule."""
         if not self.conn:
             return
@@ -78,8 +82,24 @@ class TrainingSession:
             self.correct_answers += 1
         self.total_time += time_taken
         
-        # Record in database
-        record_attempt(self.conn, blunder_id, correct, time_taken)
+        # Find the review record for this blunder
+        review = None
+        for blunder, rev in self.available_positions:
+            if blunder.id == blunder_id:
+                review = rev
+                break
+        
+        if review:
+            # Update review using spaced repetition algorithm
+            if quality is None:
+                # Convert correct/incorrect to quality rating
+                quality = 5 if correct else 1
+            
+            updated_review = self.spaced_repetition.calculate_next_review(review, quality)
+            self.spaced_repetition.update_review(updated_review)
+        else:
+            # Fallback to old method if review not found
+            record_attempt(self.conn, blunder_id, correct, time_taken)
     
     def get_session_statistics(self) -> dict:
         """Get current session statistics."""
@@ -166,16 +186,24 @@ class TrainingSession:
             else:
                 repeat_positions += 1
         
+        # Get additional statistics from spaced repetition system
+        sr_stats = self.spaced_repetition.get_review_statistics()
+        
         return {
             'total_due': len(self.available_positions),
             'new_positions': new_positions,
-            'repeat_positions': repeat_positions
+            'repeat_positions': repeat_positions,
+            'retention_rate': sr_stats.get('retention_rate', 0),
+            'average_ease_factor': sr_stats.get('average_ease_factor', 0),
+            'total_reviews': sr_stats.get('total_reviews', 0)
         }
     
     def close(self):
         """Close the database connection."""
         if self.conn:
             self.conn.close()
+        if hasattr(self, 'spaced_repetition'):
+            self.spaced_repetition.close()
     
     def __enter__(self):
         return self
