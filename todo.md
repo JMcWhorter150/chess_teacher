@@ -86,16 +86,16 @@
 **Goal**: Present blunder positions for user practice and collect performance data
 **Test**: Can display training positions, accept user moves, provide feedback
 
-- [ ] 7.1: Create gui/training_interface.py with TrainingScreen class
-- [ ] 7.2: Implement layout: chess board, position info, feedback area, navigation buttons
-- [ ] 7.3: Add load_training_position(self, blunder: Blunder) method
-- [ ] 7.4: Display position description: "Find the best move for [color] in this position"
-- [ ] 7.5: Implement user move validation against correct answer
-- [ ] 7.6: Add feedback display: "Correct!" or "Try again" or show solution
-- [ ] 7.7: Create training/session_manager.py with TrainingSession class
-- [ ] 7.8: Add get_next_review_position(self) returning Blunder based on spaced repetition
-- [ ] 7.9: Implement record_attempt(self, blunder_id: int, correct: bool, time_taken: float)
-- [ ] 7.10: Add session statistics: positions attempted, accuracy rate, time per position
+- [x] 7.1: Create gui/training_interface.py with TrainingScreen class
+- [x] 7.2: Implement layout: chess board, position info, feedback area, navigation buttons
+- [x] 7.3: Add load_training_position(self, blunder: Blunder) method
+- [x] 7.4: Display position description: "Find the best move for [color] in this position"
+- [x] 7.5: Implement user move validation against correct answer
+- [x] 7.6: Add feedback display: "Correct!" or "Try again" or show solution
+- [x] 7.7: Create training/session_manager.py with TrainingSession class
+- [x] 7.8: Add get_next_review_position(self) returning Blunder based on spaced repetition
+- [x] 7.9: Implement record_attempt(self, blunder_id: int, correct: bool, time_taken: float)
+- [x] 7.10: Add session statistics: positions attempted, accuracy rate, time per position
 
 ### Section 8: Spaced Repetition Algorithm
 **Goal**: Implement spaced repetition scheduling for optimal review timing

@@ -27,6 +27,7 @@ from gui.main_window import (
 def root_window():
     """Fixture to provide a root Tkinter window for testing."""
     root = tk.Tk()
+    root.withdraw()  # Hide the main window
     yield root
     root.destroy()
 
