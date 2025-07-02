@@ -53,36 +53,17 @@ def main():
     
     # Import GUI components (only after tkinter check passes)
     try:
-        from gui.chess_board import ChessBoardWidget
-        import tkinter as tk
+        from gui.main_window import MainWindow
     except ImportError as e:
         print(f"❌ Failed to import GUI components: {e}")
         sys.exit(1)
     
-    # Create main window
-    root = tk.Tk()
-    root.title("Chess Teacher")
-    root.geometry("600x500")
+    print("✅ Dependencies check passed!")
+    print("   Starting main application window...")
     
-    # Add a simple test to show the chess board works
-    test_label = tk.Label(root, text="Chess Teacher - Section 5 Complete!", 
-                         font=("Arial", 16))
-    test_label.pack(pady=20)
-    
-    # Create and display chess board
-    chess_board = ChessBoardWidget(root, size=400)
-    chess_board.pack(pady=20)
-    
-    # Add status
-    status_label = tk.Label(root, text="Click on pieces to make moves!", 
-                           font=("Arial", 12))
-    status_label.pack(pady=10)
-    
-    print("✅ Chess Teacher started successfully!")
-    print("   GUI window should now be visible.")
-    
-    # Start the GUI event loop
-    root.mainloop()
+    # Create and run the main application
+    app = MainWindow()
+    app.run()
 
 if __name__ == "__main__":
     main()

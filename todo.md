@@ -71,16 +71,16 @@
 **Goal**: Create main GUI window with menus and basic navigation
 **Test**: Application window opens, menus work, can navigate between screens
 
-- [ ] 6.1: Create gui/main_window.py with MainWindow class inheriting tkinter.Tk
-- [ ] 6.2: Implement __init__(self) setting up window size, title, layout
-- [ ] 6.3: Add menu bar with File, Analysis, Training, Help menus
-- [ ] 6.4: Create username input dialog for Chess.com account
-- [ ] 6.5: Add status bar showing current operation, progress
-- [ ] 6.6: Implement switch_screen(self, screen_name: str) for navigation
-- [ ] 6.7: Create placeholder screens: game_analysis, training_session, settings
-- [ ] 6.8: Add loading dialog for long operations
-- [ ] 6.9: Update main.py to create and run MainWindow
-- [ ] 6.10: Test complete GUI navigation flow
+- [x] 6.1: Create gui/main_window.py with MainWindow class inheriting tkinter.Tk
+- [x] 6.2: Implement __init__(self) setting up window size, title, layout
+- [x] 6.3: Add menu bar with File, Analysis, Training, Help menus
+- [x] 6.4: Create username input dialog for Chess.com account
+- [x] 6.5: Add status bar showing current operation, progress
+- [x] 6.6: Implement switch_screen(self, screen_name: str) for navigation
+- [x] 6.7: Create placeholder screens: game_analysis, training_session, settings
+- [x] 6.8: Add loading dialog for long operations
+- [x] 6.9: Update main.py to create and run MainWindow
+- [x] 6.10: Test complete GUI navigation flow
 
 ### Section 7: Training Interface & Session Logic
 **Goal**: Present blunder positions for user practice and collect performance data
