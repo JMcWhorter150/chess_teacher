@@ -1,0 +1,10 @@
+certifi==2025.6.15
+charset-normalizer==3.4.2
+chess==1.11.2
+idna==3.10
+pillow==11.3.0
+python-chess==1.999
+python-dotenv==1.1.1
+requests==2.32.4
+stockfish==3.28.0
+urllib3==2.5.0
