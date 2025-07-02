@@ -1,3 +1,4 @@
 .env 
 .venv/
 test_chess_trainer.db
+chess_trainer.db

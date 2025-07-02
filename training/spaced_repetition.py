@@ -20,8 +20,11 @@ class SpacedRepetition:
     MIN_EASE_FACTOR = 1.3
     MAX_EASE_FACTOR = 2.5
     
-    # Initial intervals for new items (in days)
-    INITIAL_INTERVALS = [1, 6]
+    # Initial intervals for new items (in days) - increased for better spacing
+    INITIAL_INTERVALS = [3, 7]
+    
+    # Minimum interval to prevent too frequent repetition (in days)
+    MIN_INTERVAL = 2
     
     def __init__(self, username: str):
         self.username = username
@@ -53,8 +56,22 @@ class SpacedRepetition:
             # Second repetition: use second interval
             interval = self.INITIAL_INTERVALS[1]
         else:
-            # Subsequent repetitions: multiply previous interval by ease factor
-            interval = int(review.repetition_count * review.ease_factor)
+            # Subsequent repetitions: use proper SM-2 algorithm
+            # Calculate interval based on previous interval and ease factor
+            if review.repetition_count == 3:
+                # Third repetition: use previous interval * ease factor
+                interval = int(self.INITIAL_INTERVALS[1] * review.ease_factor)
+            else:
+                # Get the previous interval from the review record
+                # For simplicity, we'll use a more conservative approach
+                interval = int(review.repetition_count * review.ease_factor * 2)
+        
+        # Apply minimum interval to prevent too frequent repetition
+        interval = max(interval, self.MIN_INTERVAL)
+        
+        # For failed items (quality < 3), increase the interval slightly
+        if quality < 3:
+            interval = max(interval, 4)  # At least 4 days for failed items
         
         # Calculate next review date
         next_review_date = date.today() + timedelta(days=interval)
@@ -85,12 +102,23 @@ class SpacedRepetition:
         if quality < 0 or quality > 5:
             raise ValueError("Quality must be between 0 and 5")
         
-        # SM-2 ease factor calculation
-        q_factor = 5 - quality
-        ease_change = 0.1 - q_factor * (0.08 + q_factor * 0.02)
+        # Improved ease factor calculation with better handling of failed items
+        if quality >= 4:  # Good or perfect recall
+            # Slight increase for good performance
+            ease_change = 0.1
+        elif quality == 3:  # Acceptable recall
+            # No change for acceptable performance
+            ease_change = 0.0
+        elif quality == 2:  # Hard recall
+            # Moderate decrease for hard recall
+            ease_change = -0.15
+        else:  # Failed recall (0-1)
+            # Significant decrease for failed recall
+            ease_change = -0.3
+        
         new_ease = current_ease + ease_change
         
-        # Apply bounds
+        # Apply bounds with more conservative minimum
         new_ease = max(self.MIN_EASE_FACTOR, min(self.MAX_EASE_FACTOR, new_ease))
         
         return new_ease
@@ -121,6 +149,27 @@ class SpacedRepetition:
         review.repetition_count = 0
         review.correct_streak = 0
         review.next_review = date.today().isoformat()
+        
+        return review
+    
+    def handle_repeated_failure(self, review: Review) -> Review:
+        """
+        Handle repeated failures by increasing the interval significantly.
+        
+        Args:
+            review: The review record to update
+        
+        Returns:
+            Updated review record
+        """
+        # For repeated failures, increase the interval significantly
+        if review.correct_streak == 0 and review.repetition_count > 2:
+            # If we've failed multiple times in a row, increase interval
+            interval = max(7, review.repetition_count * 2)  # At least 7 days, or 2x repetition count
+            review.next_review = (date.today() + timedelta(days=interval)).isoformat()
+        else:
+            # Normal handling
+            review = self.calculate_next_review(review, 1)  # Quality 1 for failure
         
         return review
     

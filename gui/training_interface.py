@@ -4,21 +4,24 @@ from tkinter import ttk, messagebox
 from typing import Optional, Callable
 from datetime import datetime
 import time
+import logging
 
 from .chess_board import ChessBoardWidget
 from data.models import Blunder, Review
 from data.database import create_connection
 from config.settings import DATABASE_PATH
 
+logger = logging.getLogger(__name__)
 
 class TrainingScreen(tk.Frame):
     """
     Training interface for practicing blunder positions.
     """
     
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, training_session=None, **kwargs):
         super().__init__(parent, **kwargs)
         self.parent = parent
+        self.training_session = training_session
         
         # Training state
         self.current_blunder: Optional[Blunder] = None
@@ -37,6 +40,12 @@ class TrainingScreen(tk.Frame):
         self.total_time = 0.0
         
         self.setup_ui()
+        
+        # Load first position if session is available
+        if self.training_session and self.training_session.available_positions:
+            logger.debug("TrainingScreen initialized with training session")
+            self.training_session.debug_session_state()
+            self.load_next_position()
     
     def setup_ui(self):
         """Create the training interface layout."""
@@ -94,6 +103,22 @@ class TrainingScreen(tk.Frame):
         self.show_solution_btn.config(state=tk.DISABLED)
         self.next_position_btn.config(state=tk.DISABLED)
     
+    def load_next_position(self):
+        """Load the next position from the training session."""
+        if not self.training_session:
+            return
+        
+        # Get next position from session
+        position = self.training_session.get_next_review_position()
+        logger.debug(f"Loading position {self.training_session.current_position_index} of {len(self.training_session.available_positions)}")
+        if position:
+            blunder, review = position
+            self.load_training_position(blunder, review)
+        else:
+            # No more positions
+            logger.debug("No more positions available")
+            self.end_session()
+    
     def load_training_position(self, blunder: Blunder, review: Optional[Review] = None):
         """Load a training position from a blunder."""
         self.current_blunder = blunder
@@ -146,6 +171,14 @@ class TrainingScreen(tk.Frame):
             self.correct_answers += 1
         self.total_time += time_taken
         
+        # Record attempt in training session if available
+        if self.training_session:
+            self.training_session.record_attempt(
+                self.current_blunder.id, 
+                self.correct_answer, 
+                time_taken
+            )
+        
         # Show feedback
         if self.correct_answer:
             self.feedback_label.config(
@@ -190,11 +223,22 @@ class TrainingScreen(tk.Frame):
         # Update the board display
         self.chess_board.set_position(board)
         
+        # Highlight the best move on the board
+        self.chess_board.clear_highlights()
+        
+        # Highlight the from square (starting position)
+        from_square = best_move.from_square
+        self.chess_board.highlight_square(from_square, "#FF6B35")  # Orange color for from square
+        
+        # Highlight the to square (ending position)
+        to_square = best_move.to_square
+        self.chess_board.highlight_square(to_square, "#4CAF50")  # Green color for to square
+        
         # Update feedback
         self.feedback_label.config(
             text=f"Solution: {self.current_blunder.best_move} "
                  f"(Evaluation change: {self.current_blunder.centipawn_loss} centipawns)",
-            foreground="blue"
+            foreground="#2E7D32"  # Dark green - easier on the eyes than blue
         )
         
         # Disable show solution button
@@ -202,24 +246,16 @@ class TrainingScreen(tk.Frame):
     
     def next_position(self):
         """Move to the next training position."""
-        # Reset the board to the original position
-        if self.current_blunder:
-            board = chess.Board(self.current_blunder.fen_before)
-            self.chess_board.set_position(board)
-        
-        # Clear feedback
-        self.feedback_label.config(text="")
-        
-        # Reset button states
-        self.show_solution_btn.config(state=tk.NORMAL)
-        self.next_position_btn.config(state=tk.DISABLED)
-        
-        # Signal that we're ready for the next position
-        # This will be handled by the session manager
-        pass
+        logger.debug("next_position() called")
+        # Load the next position from the training session
+        self.load_next_position()
     
     def end_session(self):
         """End the current training session."""
+        # End the training session if available
+        if self.training_session:
+            self.training_session.end_session()
+        
         if self.positions_attempted > 0:
             accuracy = (self.correct_answers / self.positions_attempted) * 100
             avg_time = self.total_time / self.positions_attempted

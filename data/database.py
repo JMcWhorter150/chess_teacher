@@ -62,6 +62,13 @@ def create_tables(conn):
                 correct_streak INTEGER DEFAULT 0
             );
         """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+        """)
     except Error as e:
         print(e)
 
@@ -105,7 +112,13 @@ def get_blunders_by_username(conn, username: str) -> List[Blunder]:
     rows = cur.fetchall()
     blunders = []
     for row in rows:
-        blunders.append(Blunder(*row))
+        # Convert float values to integers for integer fields
+        converted_row = list(row)
+        converted_row[0] = int(converted_row[0])  # id
+        converted_row[1] = int(converted_row[1])  # game_id
+        converted_row[2] = int(converted_row[2])  # move_number
+        converted_row[8] = int(converted_row[8])  # centipawn_loss
+        blunders.append(Blunder(*converted_row))
     return blunders
 
 def get_review_by_blunder_id(conn, blunder_id: int) -> Optional[Review]:
@@ -216,3 +229,87 @@ def record_attempt(conn, blunder_id: int, correct: bool, time_taken: float):
     
     # Save the updated review
     return insert_or_update_review(conn, review)
+
+def get_setting(conn, key: str, default: str = None) -> str:
+    """Get a setting value from the database."""
+    cur = conn.cursor()
+    cur.execute("SELECT value FROM settings WHERE key = ?", (key,))
+    result = cur.fetchone()
+    return result[0] if result else default
+
+def set_setting(conn, key: str, value: str):
+    """Set a setting value in the database."""
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT OR REPLACE INTO settings (key, value, updated_at)
+        VALUES (?, ?, ?)
+    """, (key, value, datetime.now().isoformat()))
+    conn.commit()
+
+def get_all_settings(conn) -> dict:
+    """Get all settings from the database."""
+    cur = conn.cursor()
+    cur.execute("SELECT key, value FROM settings")
+    results = cur.fetchall()
+    return {row[0]: row[1] for row in results}
+
+def delete_setting(conn, key: str):
+    """Delete a setting from the database."""
+    cur = conn.cursor()
+    cur.execute("DELETE FROM settings WHERE key = ?", (key,))
+    conn.commit()
+
+class SettingsManager:
+    """Manages application settings stored in the database."""
+    
+    def __init__(self, conn):
+        self.conn = conn
+    
+    def get_username(self) -> str:
+        """Get the current username setting."""
+        return get_setting(self.conn, 'username')
+    
+    def set_username(self, username: str):
+        """Set the username setting."""
+        set_setting(self.conn, 'username', username)
+    
+    def get_blunder_threshold(self) -> int:
+        """Get the blunder threshold setting."""
+        value = get_setting(self.conn, 'blunder_threshold', '300')
+        return int(value)
+    
+    def set_blunder_threshold(self, threshold: int):
+        """Set the blunder threshold setting."""
+        set_setting(self.conn, 'blunder_threshold', str(threshold))
+    
+    def get_analysis_depth(self) -> int:
+        """Get the analysis depth setting."""
+        value = get_setting(self.conn, 'analysis_depth', '15')
+        return int(value)
+    
+    def set_analysis_depth(self, depth: int):
+        """Set the analysis depth setting."""
+        set_setting(self.conn, 'analysis_depth', str(depth))
+    
+    def get_max_positions(self) -> int:
+        """Get the max positions per session setting."""
+        value = get_setting(self.conn, 'max_positions', '20')
+        return int(value)
+    
+    def set_max_positions(self, max_positions: int):
+        """Set the max positions per session setting."""
+        set_setting(self.conn, 'max_positions', str(max_positions))
+    
+    def get_all_settings(self) -> dict:
+        """Get all settings as a dictionary."""
+        return get_all_settings(self.conn)
+    
+    def reset_to_defaults(self):
+        """Reset all settings to their default values."""
+        defaults = {
+            'blunder_threshold': '300',
+            'analysis_depth': '15',
+            'max_positions': '20'
+        }
+        for key, value in defaults.items():
+            set_setting(self.conn, key, value)

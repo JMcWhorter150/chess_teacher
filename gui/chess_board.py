@@ -53,8 +53,8 @@ class ChessBoardWidget(Canvas):
         self.move_callback = None
         
         # Colors for the board
-        self.light_square_color = "#F0D9B5"
-        self.dark_square_color = "#B58863"
+        self.light_square_color = "#EEEED2"  # Light cream
+        self.dark_square_color = "#769656"   # Green-brown
         self.selected_color = "#7B61FF"
         self.legal_move_color = "#7B61FF"
         
@@ -102,7 +102,8 @@ class ChessBoardWidget(Canvas):
     def create_piece_symbols(self):
         """Create Unicode chess piece symbols as fallback if images aren't available."""
         piece_symbols = {
-            'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔',
+            # Use filled symbols for all pieces - color will distinguish white vs black
+            'P': '♟', 'N': '♞', 'B': '♝', 'R': '♜', 'Q': '♛', 'K': '♚',
             'p': '♟', 'n': '♞', 'b': '♝', 'r': '♜', 'q': '♛', 'k': '♚'
         }
         
@@ -116,9 +117,8 @@ class ChessBoardWidget(Canvas):
             return  # Skip drawing if tkinter is not available
             
         # Clear existing pieces
-        for item in self.find_all():
-            if self.type(item) == "text":
-                self.delete(item)
+        self.delete("piece")
+        self.delete("piece_outline")
         
         # Create piece symbols if not already done
         if not self.piece_images:
@@ -146,13 +146,31 @@ class ChessBoardWidget(Canvas):
         piece_char = piece.symbol()
         symbol = self.piece_images.get(piece_char, piece_char)
         
-        # Determine text color (white pieces on dark squares, black pieces on light squares)
-        is_light_square = (rank + file) % 2 == 0
-        text_color = "black" if is_light_square else "white"
+        # Determine text color based on piece color (not square color)
+        # White pieces should be white, black pieces should be black
+        text_color = "white" if piece.color == chess.WHITE else "black"
         
-        # Draw piece symbol
-        self.create_text(x, y, text=symbol, font=("Arial", self.square_size // 3), 
-                        fill=text_color, tags="piece")
+        # Calculate font size (larger pieces)
+        font_size = max(16, int(self.square_size // 1.5))
+        
+        # Draw piece symbol with proper styling
+        if text_color == "white":
+            # Draw black outline with slight offset in all directions
+            for dx in [-1, 0, 1]:
+                for dy in [-1, 0, 1]:
+                    if dx != 0 or dy != 0:  # Skip the center position
+                        self.create_text(x + dx, y + dy, text=symbol, 
+                                        font=("Arial", font_size, "bold"), 
+                                        fill="black", tags="piece_outline")
+            # Draw the white piece on top
+            self.create_text(x, y, text=symbol, 
+                            font=("Arial", font_size, "bold"), 
+                            fill="white", tags="piece")
+        else:
+            # Black pieces are drawn directly
+            self.create_text(x, y, text=symbol, 
+                            font=("Arial", font_size, "bold"), 
+                            fill="black", tags="piece")
     
     def highlight_square(self, square: chess.Square, color: str):
         """Highlight a square with the specified color."""

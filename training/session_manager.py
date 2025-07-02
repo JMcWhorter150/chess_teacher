@@ -1,19 +1,21 @@
 import random
 from typing import List, Optional, Callable
 from datetime import datetime, date
+import logging
 
 from data.models import Blunder, Review
 from data.database import create_connection, get_due_reviews, record_attempt
 from config.settings import DATABASE_PATH
 from .spaced_repetition import SpacedRepetition
 
+logger = logging.getLogger(__name__)
 
 class TrainingSession:
     """
     Manages a training session with blunder positions and spaced repetition logic.
     """
     
-    def __init__(self, username: str, max_positions: int = 20):
+    def __init__(self, username: str, max_positions: int = 20, auto_load_positions: bool = True):
         self.username = username
         self.max_positions = max_positions
         self.conn = create_connection(DATABASE_PATH)
@@ -35,8 +37,9 @@ class TrainingSession:
         self.on_position_loaded: Optional[Callable[[Blunder, Review], None]] = None
         self.on_session_complete: Optional[Callable[[dict], None]] = None
         
-        # Load available positions
-        self.load_available_positions()
+        # Load available positions only if auto_load is enabled
+        if auto_load_positions:
+            self.load_available_positions()
     
     def load_available_positions(self):
         """Load positions that are due for review."""
@@ -60,11 +63,14 @@ class TrainingSession:
     
     def get_next_review_position(self) -> Optional[tuple[Blunder, Review]]:
         """Get the next position for review."""
+        logger.debug(f"get_next_review_position: current_index={self.current_position_index}, total_positions={len(self.available_positions)}")
         if self.current_position_index >= len(self.available_positions):
+            logger.debug("No more positions available")
             return None
         
         position = self.available_positions[self.current_position_index]
         self.current_position_index += 1
+        logger.debug(f"Returning position {self.current_position_index-1}: {position[0].id}")
         return position
     
     def has_more_positions(self) -> bool:
@@ -90,12 +96,18 @@ class TrainingSession:
                 break
         
         if review:
-            # Update review using spaced repetition algorithm
+            # Update review using improved spaced repetition algorithm
             if quality is None:
                 # Convert correct/incorrect to quality rating
                 quality = 5 if correct else 1
             
-            updated_review = self.spaced_repetition.calculate_next_review(review, quality)
+            if not correct and review.correct_streak == 0 and review.repetition_count > 2:
+                # Handle repeated failures with increased spacing
+                updated_review = self.spaced_repetition.handle_repeated_failure(review)
+            else:
+                # Normal spaced repetition update
+                updated_review = self.spaced_repetition.calculate_next_review(review, quality)
+            
             self.spaced_repetition.update_review(updated_review)
         else:
             # Fallback to old method if review not found
@@ -209,4 +221,21 @@ class TrainingSession:
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close() 
+        self.close()
+    
+    def debug_session_state(self):
+        """Debug method to show current session state."""
+        logger.debug("=== Training Session Debug ===")
+        logger.debug(f"Username: {self.username}")
+        logger.debug(f"Total available positions: {len(self.available_positions)}")
+        logger.debug(f"Current position index: {self.current_position_index}")
+        logger.debug(f"Positions attempted: {self.positions_attempted}")
+        logger.debug(f"Correct answers: {self.correct_answers}")
+        
+        if self.available_positions:
+            logger.debug("Available positions:")
+            for i, (blunder, review) in enumerate(self.available_positions):
+                logger.debug(f"  {i}: Blunder ID {blunder.id}, Move {blunder.move_number}, Loss {blunder.centipawn_loss}")
+        else:
+            logger.debug("No available positions")
+        logger.debug("================================") 
