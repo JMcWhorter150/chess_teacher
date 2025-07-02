@@ -56,16 +56,16 @@
 **Goal**: Create interactive chess board widget for move input
 **Test**: Chess board displays correctly, can click to make legal moves
 
-- [ ] 5.1: Create gui/chess_board.py with ChessBoardWidget class inheriting tkinter.Canvas
-- [ ] 5.2: Implement draw_board(self) method creating 8x8 grid of squares
-- [ ] 5.3: Add draw_pieces(self, board: chess.Board) method placing piece images
-- [ ] 5.4: Create piece image assets or use Unicode chess symbols
-- [ ] 5.5: Implement coordinate conversion: pixel coordinates to chess squares
-- [ ] 5.6: Add click event handlers: on_square_click(self, square: chess.Square)
-- [ ] 5.7: Implement move input logic: first click selects piece, second click makes move
-- [ ] 5.8: Add legal move validation using chess.Board.is_legal(move)
-- [ ] 5.9: Add visual feedback: highlight selected square, show legal moves
-- [ ] 5.10: Test board interaction with manual move entry
+- [x] 5.1: Create gui/chess_board.py with ChessBoardWidget class inheriting tkinter.Canvas
+- [x] 5.2: Implement draw_board(self) method creating 8x8 grid of squares
+- [x] 5.3: Add draw_pieces(self, board: chess.Board) method placing piece images
+- [x] 5.4: Create piece image assets or use Unicode chess symbols
+- [x] 5.5: Implement coordinate conversion: pixel coordinates to chess squares
+- [x] 5.6: Add click event handlers: on_square_click(self, square: chess.Square)
+- [x] 5.7: Implement move input logic: first click selects piece, second click makes move
+- [x] 5.8: Add legal move validation using chess.Board.is_legal(move)
+- [x] 5.9: Add visual feedback: highlight selected square, show legal moves
+- [x] 5.10: Test board interaction with manual move entry
 
 ### Section 6: Main Application Window
 **Goal**: Create main GUI window with menus and basic navigation

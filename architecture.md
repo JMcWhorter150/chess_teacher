@@ -120,3 +120,50 @@ CREATE TABLE reviews (
     correct_streak INTEGER DEFAULT 0
 );
 ```
+
+## 3. Testing Guidelines
+
+### Environment Setup
+- **Virtual Environment**: Always activate the virtual environment before running tests
+  ```bash
+  source .venv/bin/activate  # On macOS/Linux
+  # or
+  .venv\Scripts\activate     # On Windows
+  ```
+
+### Testing Framework
+- **Framework**: Use pytest for all testing
+- **Installation**: Ensure pytest is installed in the virtual environment
+  ```bash
+  pip install pytest
+  ```
+
+### Running Tests
+- **All Tests**: Run the complete test suite
+  ```bash
+  pytest
+  ```
+- **Specific Test File**: Run tests from a specific file
+  ```bash
+  pytest tests/test_chess_board.py
+  ```
+- **Verbose Output**: Get detailed test information
+  ```bash
+  pytest -v
+  ```
+- **Test Discovery**: Run tests with coverage reporting
+  ```bash
+  pytest --cov=.
+  ```
+
+### Test Organization
+- **Test Files**: Place all test files in the `tests/` directory
+- **Naming Convention**: Test files should be named `test_*.py`
+- **Test Functions**: Individual test functions should be named `test_*`
+- **Test Classes**: Use test classes for grouping related tests
+
+### Best Practices
+- **Isolation**: Each test should be independent and not rely on other tests
+- **Fixtures**: Use pytest fixtures for common setup and teardown
+- **Mocking**: Use unittest.mock or pytest-mock for external dependencies
+- **Assertions**: Use pytest's assertion methods for better error messages
