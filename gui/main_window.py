@@ -123,7 +123,12 @@ class BaseScreen:
     
     def __init__(self, parent):
         self.parent = parent  # This will now be the MainWindow instance
-        self.frame = tk.Frame(parent.root)
+        # Handle both MainWindow objects (with .root) and tk.Tk objects (for testing)
+        if hasattr(parent, 'root'):
+            self.frame = tk.Frame(parent.root)
+        else:
+            # For testing when parent is directly a tk.Tk object
+            self.frame = tk.Frame(parent)
     
     def show(self):
         """Show this screen."""
@@ -801,6 +806,9 @@ class MainWindow:
             self.current_screen = self.screens[screen_name]
             self.current_screen.show()
             self.update_status(f"Switched to {screen_name.replace('_', ' ').title()}")
+        else:
+            # Show error for invalid screen name
+            messagebox.showerror("Invalid Screen", f"Screen '{screen_name}' not found.")
     
     def update_status(self, message: str):
         """Update the status bar message."""

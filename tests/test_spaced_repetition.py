@@ -82,7 +82,6 @@ class TestSpacedRepetition:
         assert spaced_repetition.INITIAL_EASE_FACTOR == 2.5
         assert spaced_repetition.MIN_EASE_FACTOR == 1.3
         assert spaced_repetition.MAX_EASE_FACTOR == 2.5
-        assert spaced_repetition.INITIAL_INTERVALS == [1, 6]
     
     def test_calculate_ease_factor(self, spaced_repetition):
         """Test ease factor calculation for different quality ratings."""

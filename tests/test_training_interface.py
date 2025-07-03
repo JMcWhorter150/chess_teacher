@@ -140,8 +140,11 @@ class TestTrainingSession(unittest.TestCase):
         # Mock reviews list with one position
         mock_get_reviews.return_value = [(test_blunder, test_review)]
         
-        # Create session
-        session = TrainingSession("testuser")
+        # Create session with auto_load_positions=True (default)
+        session = TrainingSession("testuser", auto_load_positions=True)
+        
+        # Verify that positions were loaded
+        self.assertEqual(len(session.available_positions), 1)
         
         # Get next position
         position = session.get_next_review_position()
